@@ -2,7 +2,7 @@ import foto1 from "../assets/images/comida.jpeg";
 import novios1 from "../assets/images/novios-1.jpeg";
 import novios2 from "../assets/images/Novios-2.jpeg";
 import novios3 from "../assets/images/Novios-3.jpeg";
-import birhtday from "../assets/images/cumpleaños.jpeg";
+import birhtday from "../assets/images/Cumpleaños.jpeg";
 import cartagena1 from "../assets/images/Cartagena-1.jpeg";
 import cartagena2 from "../assets/images/Cartagena-2.jpeg";
 import micasa from "../assets/images/mi-casa.jpeg";
