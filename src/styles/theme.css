@@ -1,0 +1,22 @@
+:root {
+
+  --background: #020617;
+  --background-secondary: #071224;
+
+  --primary: #2563eb;
+  --primary-light: #60a5fa;
+
+  --secondary: #38bdf8;
+
+  --text: #ffffff;
+  --text-muted: #cbd5e1;
+
+  --glass: rgba(255,255,255,.05);
+
+  --border: rgba(255,255,255,.08);
+
+  --shadow-blue: 0 0 60px rgba(37,99,235,.35);
+
+  --radius:24px;
+
+}
