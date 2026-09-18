@@ -52,6 +52,7 @@ export default function WelcomeModal() {
               w-full
               max-h-[85vh]
               flex-col
+              overflow-hidden
               rounded-3xl
               border
               border-blue-400/20
@@ -71,13 +72,22 @@ export default function WelcomeModal() {
               ✕
             </button>
 
-            <div className="space-y-4 overflow-y-auto text-left">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-2 text-left">
               {MESSAGE_PARAGRAPHS.map((paragraph, index) => (
                 <p key={index} className="text-base sm:text-lg font-medium text-white">
                   {paragraph}
                 </p>
               ))}
             </div>
+
+            <a
+              href="/mensaje"
+              className="fixed bottom-6 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full border border-pink-200/40 bg-pink-500 text-2xl shadow-[0_0_25px_rgba(236,72,153,.5)] transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:ring-offset-2 focus:ring-offset-transparent"
+              aria-label="Abrir la carta completa"
+              title="Abrir la carta completa"
+            >
+              💌
+            </a>
           </motion.div>
         </motion.div>
       )}
