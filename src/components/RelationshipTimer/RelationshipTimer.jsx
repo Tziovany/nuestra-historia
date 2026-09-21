@@ -1,35 +1,19 @@
-import { useEffect, useState } from "react";
-
 export default function RelationshipTimer() {
-  // ⚠️ Cambia esta fecha por la fecha en la que comenzaron
   const startDate = new Date("2025-06-23T00:00:00");
+  const endDate = new Date("2026-08-02T18:00:00");
+  const diff = endDate - startDate;
 
-  const [time, setTime] = useState(getElapsed());
+  const seconds = Math.floor(diff / 1000) % 60;
+  const minutes = Math.floor(diff / (1000 * 60)) % 60;
+  const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  function getElapsed() {
-    const now = new Date();
-    const diff = now - startDate;
-
-    const seconds = Math.floor(diff / 1000) % 60;
-    const minutes = Math.floor(diff / (1000 * 60)) % 60;
-    const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    return { days, hours, minutes, seconds };
-  }
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(getElapsed());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const time = { days, hours, minutes, seconds };
 
   return (
     <div className="mt-12 text-center">
       <p className="text-blue-300 text-xl">
-        Llevamos juntos
+        Lo que duró nuestra historia
       </p>
 
       <div className="mt-6 flex flex-wrap justify-center gap-6">

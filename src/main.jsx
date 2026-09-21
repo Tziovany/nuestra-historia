@@ -16,6 +16,8 @@ function raf(time) {
   requestAnimationFrame(raf)
 }
 
+requestAnimationFrame(raf)
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
