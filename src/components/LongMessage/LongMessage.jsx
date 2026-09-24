@@ -34,6 +34,20 @@ const LONG_MESSAGE = [
 
 const STORAGE_KEY = "nuestra-historia-extra-message";
 const TABLE_NAME = "shared_messages";
+const normalizeMessages = (value) => {
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
+    } catch {
+      return value.trim() ? [value.trim()] : [];
+    }
+  }
+
+  return [];
+};
 const MESSAGE_FROM_CREATOR = [
   "Karem (Mi vida) ...",
   "No sé si esto también lo vayas a ver, pero en este caso, en esta página de esta web que te hice con todo mi cariño quería dejar todo lo que nunca te he podido decir, y aunque sea muy tarde es solo una opción para desahogarme.",
@@ -51,7 +65,8 @@ const supabase =
 export default function LongMessage() {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [extraMessage, setExtraMessage] = useState("");
-  const [savedMessage, setSavedMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [expandedIds, setExpandedIds] = useState({});
 
   useEffect(() => {
     const closeWithEscape = (event) => {
@@ -63,49 +78,53 @@ export default function LongMessage() {
   }, []);
 
   useEffect(() => {
-    const loadSavedMessage = async () => {
+    const loadSavedMessages = async () => {
       const savedText = localStorage.getItem(STORAGE_KEY);
+      let loadedMessages = normalizeMessages(savedText);
 
       if (supabase) {
         const { data, error } = await supabase.from(TABLE_NAME).select("content").eq("id", "shared").maybeSingle();
 
         if (!error && data?.content) {
-          setExtraMessage(data.content);
-          setSavedMessage(data.content);
-          localStorage.setItem(STORAGE_KEY, data.content);
-          return;
+          loadedMessages = normalizeMessages(data.content);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(loadedMessages));
         }
       }
 
-      if (savedText) {
-        setExtraMessage(savedText);
-        setSavedMessage(savedText);
-      }
+      setMessages(loadedMessages);
     };
 
-    loadSavedMessage();
+    loadSavedMessages();
   }, []);
 
   const handleSaveMessage = async () => {
     const finalMessage = extraMessage.trim();
 
+    if (!finalMessage) return;
+
+    const nextMessages = [...messages, finalMessage];
+
     if (supabase) {
       const { error } = await supabase
         .from(TABLE_NAME)
-        .upsert({ id: "shared", content: finalMessage }, { onConflict: "id" });
+        .upsert({ id: "shared", content: JSON.stringify(nextMessages) }, { onConflict: "id" });
 
       if (error) {
         console.error("Error saving to Supabase:", error);
         return;
       }
-
-      localStorage.setItem(STORAGE_KEY, finalMessage);
-      setSavedMessage(finalMessage);
-      return;
     }
 
-    localStorage.setItem(STORAGE_KEY, finalMessage);
-    setSavedMessage(finalMessage);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMessages));
+    setMessages(nextMessages);
+    setExtraMessage("");
+  };
+
+  const toggleMessage = (index) => {
+    setExpandedIds((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   return (
@@ -284,9 +303,38 @@ export default function LongMessage() {
                 </button>
               </div>
 
-              {savedMessage && (
-                <div className="mt-5 rounded-2xl border border-pink-200/20 bg-white/[0.04] p-4 text-base leading-relaxed text-slate-100 whitespace-pre-wrap">
-                  {savedMessage}
+              {messages.length > 0 && (
+                <div className="mt-5 space-y-3">
+                  {messages.map((message, index) => {
+                    const isExpanded = Boolean(expandedIds[index]);
+                    const isLong = message.length > 220;
+
+                    return (
+                      <div
+                        key={`${message}-${index}`}
+                        className="rounded-2xl border border-pink-200/20 bg-white/[0.04] p-4 text-base leading-relaxed text-slate-100"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-200/80">
+                            Mensaje {index + 1}
+                          </span>
+                          {isLong && (
+                            <button
+                              type="button"
+                              onClick={() => toggleMessage(index)}
+                              className="text-xs font-semibold text-pink-200 transition hover:text-white"
+                            >
+                              {isExpanded ? "Minimizar" : "Leer más"}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className={isExpanded || !isLong ? "mt-3 whitespace-pre-wrap" : "mt-3 max-h-20 overflow-hidden whitespace-pre-wrap"}>
+                          {message}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </motion.div>
