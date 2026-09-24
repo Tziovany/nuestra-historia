@@ -308,11 +308,12 @@ export default function LongMessage() {
                   {messages.map((message, index) => {
                     const isExpanded = Boolean(expandedIds[index]);
                     const isLong = message.length > 220;
+                    const preview = isLong ? `${message.slice(0, 220).trimEnd()}...` : message;
 
                     return (
                       <div
                         key={`${message}-${index}`}
-                        className="rounded-2xl border border-pink-200/20 bg-white/[0.04] p-4 text-base leading-relaxed text-slate-100"
+                        className="overflow-hidden rounded-2xl border border-pink-200/20 bg-white/[0.04] p-4 text-base leading-relaxed text-slate-100 shadow-[0_0_25px_rgba(244,114,182,0.06)]"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-200/80">
@@ -322,15 +323,25 @@ export default function LongMessage() {
                             <button
                               type="button"
                               onClick={() => toggleMessage(index)}
-                              className="text-xs font-semibold text-pink-200 transition hover:text-white"
+                              className="inline-flex items-center gap-2 rounded-full border border-pink-300/30 bg-pink-500/10 px-2.5 py-1 text-[11px] font-semibold text-pink-100 transition hover:border-pink-200/60 hover:bg-pink-400/15 hover:text-white"
                             >
+                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-pink-300" />
                               {isExpanded ? "Minimizar" : "Leer más"}
                             </button>
                           )}
                         </div>
 
-                        <div className={isExpanded || !isLong ? "mt-3 whitespace-pre-wrap" : "mt-3 max-h-20 overflow-hidden whitespace-pre-wrap"}>
-                          {message}
+                        <div className="mt-3">
+                          <div
+                            className={
+                              isExpanded || !isLong
+                                ? "whitespace-pre-wrap text-slate-100"
+                                : "max-h-[7.1rem] overflow-hidden whitespace-pre-wrap text-slate-200"
+                            }
+                          >
+                            {isExpanded || !isLong ? message : preview}
+                          </div>
+
                         </div>
                       </div>
                     );
