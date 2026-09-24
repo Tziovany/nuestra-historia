@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Heart, Maximize2 } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 
 const media = Object.entries(
   import.meta.glob("../../assets/images/*.{jpeg,mp4}", {
@@ -31,8 +32,26 @@ const LONG_MESSAGE = [
   "Te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo.",
 ];
 
+const STORAGE_KEY = "nuestra-historia-extra-message";
+const TABLE_NAME = "shared_messages";
+const MESSAGE_FROM_CREATOR = [
+  "Karem (Mi vida) ...",
+  "No sé si esto también lo vayas a ver, pero en este caso, en esta página de esta web que te hice con todo mi cariño quería dejar todo lo que nunca te he podido decir, y aunque sea muy tarde es solo una opción para desahogarme.",
+  "Tuve muchas primeras veces en mi vida contigo, pero enamorarme de ti fue la mas hermosa y la que mas me marcó. Aunque hay algunas cosas que también fueron mi primera vez, como sentir que podía pasar toda mi vida con alguien que amaba inmensamente como lo eras tú, como sentir que podía confiar y formar una familia con la mujer mas hermosa que he tenido en mi vida, como querer tener una niña con tus ojos hermosos, tus cachetes, tu hermosa sonrisa, con tu gran bondad, con tu gran corazón, definitivamente toda tú.",
+  "Aunque hayamos terminado acá siempre voy a estar, esperando que tu vida mejore y que si yo era lo que te tenía mal o no te dejaba avanzar prefiero estar lejos y que tu puedas ser la mujer mas feliz del mundo.",
+  "No sabes cuato extraño estar para ti, abrazarte, besarte, decirte que te amo y que eres la mujer mas hermosa del mundo, que siempre voy a estar sin importar nada. Extraño nuestras charlas, así yo no haya aportado mucho en tu vida, así no sea el mas interesante, pero hasta en los momentos en los que solo te veía y sabía que era el mas afortunado en tenerte, igualmente eran los momentos mas valiosos y hermosos de mi vida, enserio que gracias por todo y por haber estado ahí.",
+  "Te amo mucho",
+  "A la derecha dejé un cuadro donde puedes escribir lo que quieras decirme, y si quieres que lo guarde para siempre, solo dale click en guardar y va a quedar guardado para leerlo siempre que quieras y si quieres que yo lo lea.",
+];
+const supabase =
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+    ? createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+    : null;
+
 export default function LongMessage() {
   const [selectedMedia, setSelectedMedia] = useState(null);
+  const [extraMessage, setExtraMessage] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
 
   useEffect(() => {
     const closeWithEscape = (event) => {
@@ -42,6 +61,50 @@ export default function LongMessage() {
     window.addEventListener("keydown", closeWithEscape);
     return () => window.removeEventListener("keydown", closeWithEscape);
   }, []);
+
+  useEffect(() => {
+    const loadSavedMessage = async () => {
+      const savedText = localStorage.getItem(STORAGE_KEY);
+
+      if (supabase) {
+        const { data, error } = await supabase.from(TABLE_NAME).select("content").eq("id", "shared").maybeSingle();
+
+        if (!error && data?.content) {
+          setSavedMessage(data.content);
+          localStorage.setItem(STORAGE_KEY, data.content);
+          return;
+        }
+      }
+
+      if (savedText) {
+        setSavedMessage(savedText);
+      }
+    };
+
+    loadSavedMessage();
+  }, []);
+
+  const handleSaveMessage = async () => {
+    const finalMessage = extraMessage.trim();
+
+    if (supabase) {
+      const { error } = await supabase
+        .from(TABLE_NAME)
+        .upsert({ id: "shared", content: finalMessage }, { onConflict: "id" });
+
+      if (error) {
+        console.error("Error saving to Supabase:", error);
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, finalMessage);
+      setSavedMessage(finalMessage);
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEY, finalMessage);
+    setSavedMessage(finalMessage);
+  };
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#020617] px-5 py-8 text-white sm:px-8 sm:py-12">
@@ -83,6 +146,7 @@ export default function LongMessage() {
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
+
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }}
               animate={{
@@ -173,6 +237,51 @@ export default function LongMessage() {
                 Son una muestra de los muchos recuerdos de ti, de nosotros.
               </p>
             </motion.aside>
+          </div>
+
+          <div className="mt-4 grid gap-5 lg:col-span-2 lg:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32 }}
+              className="rounded-2xl border border-pink-200/20 bg-slate-950/40 p-5 shadow-[0_0_30px_rgba(244,114,182,0.12)]"
+            >
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.22em] text-pink-200/80">
+                Mensajito de mi parte
+              </p>
+              <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-base leading-relaxed text-slate-100">
+                {MESSAGE_FROM_CREATOR.map((paragraph, index) => (
+                  <p key={paragraph} className={index === MESSAGE_FROM_CREATOR.length - 1 ? "font-bold" : ""}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38 }}
+              className="rounded-2xl border border-pink-200/20 bg-slate-950/40 p-5 shadow-[0_0_30px_rgba(244,114,182,0.12)]"
+            >
+              <textarea
+                id="extra-message"
+                value={extraMessage}
+                onChange={(event) => setExtraMessage(event.target.value)}
+                placeholder="Escribe aquí lo que quieres decir..."
+                className="min-h-[170px] w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base leading-relaxed text-slate-100 placeholder:text-slate-400 focus:border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400/40"
+              />
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveMessage}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                >
+                  Guardar
+                </button>
+              </div>
+            </motion.div>
           </div>
         </section>
       </div>
