@@ -32,22 +32,7 @@ const LONG_MESSAGE = [
   "Te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo, te amo.",
 ];
 
-const STORAGE_KEY = "nuestra-historia-extra-message";
 const TABLE_NAME = "shared_messages";
-const normalizeMessages = (value) => {
-  if (Array.isArray(value)) return value;
-
-  if (typeof value === "string") {
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
-    } catch {
-      return value.trim() ? [value.trim()] : [];
-    }
-  }
-
-  return [];
-};
 const MESSAGE_FROM_CREATOR = [
   "Karem (Mi vida) ...",
   "No sé si esto también lo vayas a ver, pero en este caso, en esta página de esta web que te hice con todo mi cariño quería dejar todo lo que nunca te he podido decir, y aunque sea muy tarde es solo una opción para desahogarme.",
@@ -79,19 +64,23 @@ export default function LongMessage() {
 
   useEffect(() => {
     const loadSavedMessages = async () => {
-      const savedText = localStorage.getItem(STORAGE_KEY);
-      let loadedMessages = normalizeMessages(savedText);
-
-      if (supabase) {
-        const { data, error } = await supabase.from(TABLE_NAME).select("content").eq("id", "shared").maybeSingle();
-
-        if (!error && data?.content) {
-          loadedMessages = normalizeMessages(data.content);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(loadedMessages));
-        }
+      if (!supabase) {
+        setMessages([]);
+        return;
       }
 
-      setMessages(loadedMessages);
+      const { data, error } = await supabase
+        .from(TABLE_NAME)
+        .select("id, content")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Error loading messages from Supabase:", error);
+        setMessages([]);
+        return;
+      }
+
+      setMessages((data || []).map((message) => message.content));
     };
 
     loadSavedMessages();
@@ -102,21 +91,22 @@ export default function LongMessage() {
 
     if (!finalMessage) return;
 
-    const nextMessages = [...messages, finalMessage];
-
-    if (supabase) {
-      const { error } = await supabase
-        .from(TABLE_NAME)
-        .upsert({ id: "shared", content: JSON.stringify(nextMessages) }, { onConflict: "id" });
-
-      if (error) {
-        console.error("Error saving to Supabase:", error);
-        return;
-      }
+    if (!supabase) {
+      console.error("Supabase no está configurado para guardar mensajes.");
+      return;
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMessages));
-    setMessages(nextMessages);
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .insert({ content: finalMessage })
+      .select("id, content");
+
+    if (error) {
+      console.error("Error saving to Supabase:", error);
+      return;
+    }
+
+    setMessages((prevMessages) => [...prevMessages, ...(data || []).map((message) => message.content)]);
     setExtraMessage("");
   };
 
