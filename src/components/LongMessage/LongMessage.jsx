@@ -40,7 +40,7 @@ const MESSAGE_FROM_CREATOR = [
   "Aunque hayamos terminado acá siempre voy a estar, esperando que tu vida mejore y que si yo era lo que te tenía mal o no te dejaba avanzar prefiero estar lejos y que tu puedas ser la mujer mas feliz del mundo.",
   "No sabes cuato extraño estar para ti, abrazarte, besarte, decirte que te amo y que eres la mujer mas hermosa del mundo, que siempre voy a estar sin importar nada. Extraño nuestras charlas, así yo no haya aportado mucho en tu vida, así no sea el mas interesante, pero hasta en los momentos en los que solo te veía y sabía que era el mas afortunado en tenerte, igualmente eran los momentos mas valiosos y hermosos de mi vida, enserio que gracias por todo y por haber estado ahí.",
   "Te amo mucho",
-  "A la derecha dejé un cuadro donde puedes escribir lo que quieras decirme, y si quieres que lo guarde para siempre, solo dale click en guardar y va a quedar guardado para leerlo siempre que quieras y si quieres que yo lo lea.",
+  "A la derecha dejé un cuadro donde puedes escribir lo que quieras decirme, y si quieres que lo guarde para siempre, solo dale click en guardar y va a quedar guardado para leerlo siempre que quieras y si quieres que yo lo lea. Igualmente si me quieres escribir por whatsapp o por acá, siempre voy a estar para ti. =}",
 ];
 const supabase =
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
