@@ -70,6 +70,7 @@ export default function LongMessage() {
         const { data, error } = await supabase.from(TABLE_NAME).select("content").eq("id", "shared").maybeSingle();
 
         if (!error && data?.content) {
+          setExtraMessage(data.content);
           setSavedMessage(data.content);
           localStorage.setItem(STORAGE_KEY, data.content);
           return;
@@ -77,6 +78,7 @@ export default function LongMessage() {
       }
 
       if (savedText) {
+        setExtraMessage(savedText);
         setSavedMessage(savedText);
       }
     };
@@ -281,6 +283,12 @@ export default function LongMessage() {
                   Guardar
                 </button>
               </div>
+
+              {savedMessage && (
+                <div className="mt-5 rounded-2xl border border-pink-200/20 bg-white/[0.04] p-4 text-base leading-relaxed text-slate-100 whitespace-pre-wrap">
+                  {savedMessage}
+                </div>
+              )}
             </motion.div>
           </div>
         </section>
